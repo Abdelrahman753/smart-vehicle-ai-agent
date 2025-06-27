@@ -44,3 +44,18 @@ Built as a graduation project to demonstrate the synergy of **AI, IoT, Edge Comp
 ### 🤖 AI Agent Flow
 ![AI Agent Flow](docs/README_diagrams/ai_agent_flow.png)
 
+---
+
+### 👨‍💻 Team Members
+
+> - Mohamed Abdul Sattar  
+> - Mohamed Adel Ashour  
+> - Mahmoud Ahmed Elsayed 
+> - Waleed Salah Mohamed   
+> - Youssef Mamdouh Shaker 
+> - Ezat Adel Mahmoud 
+> - Rami Adel Atef  
+> - Adeeba Fayez Younan 
+> - Nabila Gomaa Hassan 
+> - Abdul Rahman Mahmoud Fathi  
+
