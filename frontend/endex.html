@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>شات وتحكم مع ليف ستريم</title>
+  <style>
+    /* Reset */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121212;
+      color: #eee;
+      direction: rtl;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+      user-select: none;
+    }
+
+    /* الحاوي الرئيسي للواجهة */
+    #main-layout {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 1200px;
+      gap: 20px;
+    }
+
+    /* حاوية الشات واللايف مع التحكم */
+    #top-layout {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      gap: 20px;
+    }
+
+    /* حاوية الشات */
+    #chat-container {
+      width: 400px;
+      background: #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 150, 255, 0.6);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 90vh;
+    }
+
+    #chat-gemini-header {
+      background: linear-gradient(90deg, #0a84ff, #004a9f);
+      padding: 14px 20px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      user-select: none;
+      box-shadow: 0 2px 8px rgba(0, 74, 159, 0.6);
+    }
+
+    #chat-gemini-box {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background: #1a1a1a;
+      scrollbar-width: thin;
+      scrollbar-color: #0a84ff transparent;
+      scroll-behavior: auto;
+      overscroll-behavior: contain;
+      display: block;
+      max-height: 100%;
+    }
+    #chat-gemini-box::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chat-gemini-box::-webkit-scrollbar-thumb {
+      background: #0a84ff;
+      border-radius: 10px;
+    }
+    #chat-gemini-box::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .message {
+      max-width: 70%;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 5px;
+      word-wrap: break-word;
+    }
+    .user-message {
+      background: #007bff;
+      color: white;
+      margin-left: 30%;
+    }
+    .bot-message {
+      background: #444;
+      color: #ddd;
+      margin-right: 30%;
+    }
+
+    #chat-gemini-input-container {
+      display: flex;
+      padding: 10px;
+      background: #333;
+    }
+    #chat-gemini-input {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      margin-right: 10px;
+      outline: none;
+    }
+    #chat-gemini-send-btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    #chat-gemini-send-btn:hover {
+      background: #0056b3;
+    }
+
+    /* حاوية اللايف ستريم */
+    #live-stream-section {
+      flex: 1;
+      background: #2e2e2e;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 150, 255, 0.6);
+      padding: 20px;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #live-stream-section h3 {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 12px;
+      text-align: center;
+      color: #0a84ff;
+      user-select: none;
+    }
+
+    .view-card {
+      text-align: center;
+    }
+
+    #live-stream {
+      width: 100%;
+      max-width: 550px;
+      height: auto;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    #live-stream:hover {
+      transform: scale(1.05);
+    }
+
+    /* حاوية التحكم */
+    #control-container {
+      width: 100%;
+      max-width: 800px;
+      background: #2e2e2e;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 150, 255, 0.6);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 30vh;
+    }
+
+    #chat-control-header {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 12px;
+      text-align: center;
+      color: #0a84ff;
+      user-select: none;
+      padding: 12px 16px;
+      border-bottom: 2px solid #0a84ff;
+    }
+
+    #chat-control-box {
+      max-height: 130px;
+      overflow-y: auto;
+      padding: 8px;
+      background: #1f1f1f;
+      border-radius: 10px;
+      box-shadow: inset 0 0 8px #000;
+      scrollbar-width: thin;
+      scrollbar-color: #0a84ff transparent;
+    }
+    #chat-control-box::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chat-control-box::-webkit-scrollbar-thumb {
+      background: #0a84ff;
+      border-radius: 10px;
+    }
+
+    .control-message {
+      max-width: 70%;
+      margin: 6px 0;
+      padding: 8px 14px;
+      border-radius: 16px;
+      font-size: 15px;
+      word-wrap: break-word;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    }
+    .control-user-message {
+      background: #0a84ff;
+      color: white;
+      align-self: flex-start;
+      border-bottom-left-radius: 3px;
+    }
+    .control-bot-message {
+      background: #444;
+      color: #ddd;
+      align-self: flex-end;
+      border-bottom-right-radius: 3px;
+    }
+
+    #manual-controls {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      padding: 20px;
+      user-select: none;
+    }
+    #manual-controls button {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: none;
+      background: #0a84ff;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #0a84ffaa;
+      transition: background-color 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+    }
+    #manual-controls button:hover {
+      background: #004a9f;
+      box-shadow: 0 0 15px #004a9fcc;
+    }
+
+    /* النافذة المنبثقة (Modal) */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      position: relative;
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    #modal-view {
+      text-align: center;
+    }
+
+    #modal-view img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 10px;
+    }
+
+    /* استجابة للشاشات الصغيرة */
+    @media (max-width: 1000px) {
+      #main-layout, #top-layout {
+        flex-direction: column;
+      }
+      #chat-container, #live-stream-section, #control-container {
+        width: 100%;
+      }
+      #live-stream {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="main-layout">
+    <div id="top-layout">
+      <!-- حاوية الشات -->
+      <div id="chat-container">
+        <header id="chat-gemini-header">شات Gemini (النصّي)</header>
+        <div id="chat-gemini-box" role="log">
+          <div class="bot-message">مرحبًا! كيف أستطيع مساعدتك؟</div>
+        </div>
+        <div id="chat-gemini-input-container">
+          <input type="text" id="chat-gemini-input" placeholder="اكتب رسالتك هنا..." />
+          <button id="chat-gemini-send-btn">إرسال</button>
+        </div>
+      </div>
+
+      <!-- حاوية اللايف ستريم -->
+      <div id="live-stream-section">
+        <h3>LIVE STREAM</h3>
+        <div class="view-card">
+          <img id="live-stream" src="http://192.168.0.107:8080/?action=stream" alt="Live Stream" onclick="openModal('live-stream')" />
+        </div>
+      </div>
+    </div>
+
+    <!-- حاوية التحكم (تحت الشات واللايف) -->
+    <div id="control-container">
+      <header id="chat-control-header">أوامر التحكم (الأسهم)</header>
+      <div id="chat-control-box" aria-live="polite" aria-relevant="additions" role="log">
+        <div class="control-bot-message">استخدم الأسهم أو الأزرار للتحكم.</div>
+      </div>
+      <div id="manual-controls" aria-label="أزرار تحكم">
+        <button title="تحرك للأعلى" data-command="FO" aria-label="تحرك للأعلى">⬆️</button>
+        <button title="تحرك لليسار" data-command="LE" aria-label="تحرك لليسار">⬅️</button>
+        <button title="توقف" data-command="ST" aria-label="توقف">⏹️</button>
+        <button title="تحرك لليمين" data-command="RI" aria-label="تحرك لليمين">➡️</button>
+        <button title="تحرك للخلف" data-command="BA" aria-label="تحرك للخلف">⬇️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- النافذة المنبثقة (Modal) -->
+  <div id="modal" class="modal">
+    <div class="modal-content" id="modal-content">
+      <span class="close-button" onclick="closeModal()">×</span>
+      <div id="modal-view"></div>
+    </div>
+  </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // عناصر شات Gemini
+  const chatGeminiBox = document.getElementById('chat-gemini-box');
+  const chatGeminiInput = document.getElementById('chat-gemini-input');
+  const chatGeminiSendBtn = document.getElementById('chat-gemini-send-btn');
+
+  // عناصر شات أوامر التحكم
+  const chatControlBox = document.getElementById('chat-control-box');
+  const manualControls = document.getElementById('manual-controls');
+
+  // عناصر البث المباشر
+  const modal = document.getElementById('modal');
+  const modalContent = document.getElementById('modal-content');
+  const modalView = document.getElementById('modal-view');
+
+  function appendMessage(container, text, className) {
+    const scrollPosition = container.scrollTop;
+    const msg = document.createElement('div');
+    msg.className = className;
+    msg.textContent = text;
+    container.appendChild(msg);
+    container.scrollTop = scrollPosition;
+  }
+
+  async function sendGeminiMessage() {
+    const text = chatGeminiInput.value.trim();
+    if (!text) return;
+    appendMessage(chatGeminiBox, text, 'message user-message');
+    chatGeminiInput.value = '';
+
+    try {
+      const response = await fetch('/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ message: text })
+      });
+      const data = await response.json();
+      appendMessage(chatGeminiBox, data.response || 'لم يتم استلام رد', 'message bot-message');
+    } catch {
+      appendMessage(chatGeminiBox, 'خطأ في الاتصال بالخادم', 'message bot-message');
+    }
+  }
+
+  chatGeminiSendBtn.addEventListener('click', sendGeminiMessage);
+  chatGeminiInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendGeminiMessage();
+  });
+
+  async function sendControlCommand(command) {
+    appendMessage(chatControlBox, command, 'control-message control-user-message');
+
+    try {
+      const response = await fetch('/control', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ command })
+      });
+      const data = await response.json();
+      appendMessage(chatControlBox, data.response || 'تم تنفيذ الأمر', 'control-message control-bot-message');
+    } catch {
+      appendMessage(chatControlBox, 'خطأ في إرسال الأمر', 'control-message control-bot-message');
+    }
+  }
+
+  manualControls.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON') {
+      const command = e.target.getAttribute('data-command');
+      if (command) sendControlCommand(command);
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    const keys = {
+      ArrowUp: 'FO',
+      ArrowLeft: 'LE',
+      ArrowRight: 'RI',
+      ArrowDown: 'BA',
+      Numpad0: 'ST'
+    };
+    if (keys[e.code]) {
+      sendControlCommand(keys[e.code]);
+      e.preventDefault();
+    }
+  });
+
+  function openModal(imageId) {
+    const image = document.getElementById(imageId);
+    modal.style.display = 'flex';
+    modalView.innerHTML = `<img src="${image.src}" alt="${image.alt}">`;
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+    modalView.innerHTML = '';
+  }
+
+  window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+});
+</script>
+
