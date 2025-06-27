@@ -29,7 +29,7 @@ Built as a graduation project to demonstrate the synergy of **AI, IoT, Edge Comp
 
 ## 🧭 System Architecture
 
-![System Architecture](docs/architecture.png)
+![System Architecture](docs/README_diagrams/architecture.png)
 
 ---
 
